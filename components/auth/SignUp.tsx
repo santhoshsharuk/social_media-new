@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { useAuthToggle } from '../../views/AuthView';
 import { router } from '../../utils/router';
+import { getAssetPath } from '../../utils/assets';
 
 export const SignUp: React.FC = () => {
   const { signup } = useAuth();
@@ -90,7 +91,7 @@ export const SignUp: React.FC = () => {
         <div className="hidden md:flex flex-col items-center justify-center">
           <div className="relative">
             <img 
-              src="/assets/loginpage.png" 
+              src={getAssetPath('assets/loginpage.png')} 
               alt="SignUp Illustration" 
               className={`w-full h-auto max-w-lg object-contain drop-shadow-2xl transition-transform duration-700 ${
                 isFlipping ? 'animate-[flip_0.7s_ease-in-out]' : 'image-float'
