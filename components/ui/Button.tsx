@@ -8,7 +8,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isRound?: boolean;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export const Button: React.FC<ButtonProps> = React.memo(({
   children,
   className = '',
   variant = 'primary',
@@ -19,9 +19,9 @@ export const Button: React.FC<ButtonProps> = ({
   const baseClasses = 'font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition ease-in-out duration-150';
   
   const variantClasses = {
-    primary: 'bg-saffron hover:bg-saffron-dark text-white focus:ring-saffron',
-    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 focus:ring-gray-500',
-    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
+    primary: 'bg-primary hover:bg-primary/90 text-white focus:ring-primary flex items-center justify-center',
+    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 focus:ring-gray-500 flex items-center justify-center',
+    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 flex items-center justify-center',
   };
 
   const sizeClasses = {
@@ -40,4 +40,4 @@ export const Button: React.FC<ButtonProps> = ({
       {children}
     </button>
   );
-};
+});

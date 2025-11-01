@@ -3,10 +3,10 @@ import { Header } from '../components/layout/Header';
 import { Sidebar } from '../components/layout/Sidebar';
 import { Footer } from '../components/layout/Footer';
 import { FeedView } from './FeedView';
-import { ChatView } from './ChatView';
 import { ProfileView } from './ProfileView';
 import { AdminView } from './AdminView';
 import { UsersView } from './UsersView';
+import { SettingsView } from './SettingsView';
 import { Page } from '../types';
 import { BottomNavBar } from '../components/layout/BottomNavBar';
 
@@ -21,29 +21,25 @@ export const MainView: React.FC<MainViewProps> = ({ currentPage, setCurrentPage 
     switch(currentPage) {
       case 'feed':
         return <FeedView />;
-      case 'chat':
-        return <ChatView />;
       case 'profile':
         return <ProfileView />;
       case 'admin':
         return <AdminView />;
       case 'users':
         return <UsersView />;
+      case 'settings':
+        return <SettingsView />;
       default:
         return <FeedView />;
     }
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header setCurrentPage={setCurrentPage} />
-      <div className="flex flex-1">
-        <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-gray-100 dark:bg-gray-800 overflow-y-auto pb-24 md:pb-6 lg:pb-8">
-          {renderContent()}
-        </main>
-      </div>
-      <Footer />
+    <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark">
+      <Header currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      <main className="flex-1 overflow-y-auto">
+        {renderContent()}
+      </main>
       <BottomNavBar currentPage={currentPage} setCurrentPage={setCurrentPage} />
     </div>
   );

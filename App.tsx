@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { AuthContext } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { User, Page } from './types';
 import { AuthView } from './views/AuthView';
 import { MainView } from './views/MainView';
@@ -38,6 +39,12 @@ function App() {
     return loggedInUser;
   };
 
+  const loginWithGoogle = async (): Promise<User> => {
+    const loggedInUser = await api.loginWithGoogle();
+    setUser(loggedInUser);
+    return loggedInUser;
+  };
+
   const signup = async (name: string, email: string, password?: string): Promise<User> => {
     const newUser = await api.signup(name, email, password);
     setUser(newUser);
@@ -68,25 +75,42 @@ function App() {
       updateUserState({ following: user.following.filter(id => id !== adminId) });
   }, [user]);
 
+  const updateProfile = async (updates: { name?: string; bio?: string; photoURL?: string }) => {
+    if (!user) return;
+    await api.updateUserProfile(user.id, updates);
+    updateUserState(updates);
+  };
+
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <Spinner />
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-primary/10 to-orange-600/10 dark:from-gray-900 dark:to-gray-800">
+        <div className="text-center">
+          <div className="mb-6 animate-bounce">
+            <div className="w-20 h-20 bg-gradient-to-r from-primary to-orange-600 rounded-2xl flex items-center justify-center shadow-2xl mx-auto">
+              <span className="material-symbols-outlined text-white text-4xl">rocket_launch</span>
+            </div>
+          </div>
+          <Spinner />
+          <h2 className="text-2xl font-bold text-primary mt-6 mb-2">Productive Bharat</h2>
+          <p className="text-text-muted-light dark:text-text-muted-dark animate-pulse">Loading your experience...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup, follow, unfollow }}>
-      <div className="App">
-        {user ? (
-          <MainView currentPage={currentPage} setCurrentPage={setCurrentPage} />
-        ) : (
-          <AuthView />
-        )}
-      </div>
-    </AuthContext.Provider>
+    <ThemeProvider>
+      <AuthContext.Provider value={{ user, login, loginWithGoogle, logout, signup, follow, unfollow, updateProfile }}>
+        <div className="App">
+          {user ? (
+            <MainView currentPage={currentPage} setCurrentPage={setCurrentPage} />
+          ) : (
+            <AuthView />
+          )}
+        </div>
+      </AuthContext.Provider>
+    </ThemeProvider>
   );
 }
 

@@ -72,17 +72,32 @@ export interface User {
   role: UserRole;
   goals: string[];
   following: string[]; // array of admin user IDs
+  followers?: string[]; // array of user IDs who follow this user
+}
+
+export interface Comment {
+  id: string;
+  postId: string;
+  authorId: string;
+  authorName: string;
+  authorPhotoURL: string;
+  text: string;
+  createdAt: Date;
 }
 
 export interface Post {
   id: string;
   authorId: string;
-  authorName:string;
+  authorName: string;
   authorPhotoURL: string;
   content: string;
   mediaURL?: string;
   mediaType?: 'image' | 'video';
   createdAt: Date;
+  likes: string[]; // Array of user IDs who liked the post
+  likesCount: number;
+  commentsCount: number;
+  sharesCount: number;
 }
 
 export interface Message {
@@ -98,4 +113,6 @@ export interface Chat {
     messages: Message[];
 }
 
-export type Page = 'feed' | 'chat' | 'profile' | 'admin' | 'users';
+export type Page = 'feed' | 'chat' | 'profile' | 'admin' | 'users' | 'settings';
+
+export type Theme = 'light' | 'dark';

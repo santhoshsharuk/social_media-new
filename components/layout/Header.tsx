@@ -3,8 +3,10 @@ import React from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Avatar } from '../ui/Avatar';
 import { Page } from '../../types';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface HeaderProps {
+    currentPage: Page;
     setCurrentPage: (page: Page) => void;
 }
 
@@ -17,30 +19,131 @@ const FlagIcon = () => (
     </svg>
 );
 
-export const Header: React.FC<HeaderProps> = ({ setCurrentPage }) => {
+export const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage }) => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-10">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center cursor-pointer" onClick={() => setCurrentPage('feed')}>
-            <FlagIcon/>
-            <h1 className="text-xl font-bold text-saffron">Productive Bharat</h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button onClick={() => alert('Notifications clicked!')} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
-               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+    <header className="sticky top-0 z-10 bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-sm hidden md:block">
+      <div className="flex items-center p-4 pb-2 justify-between">
+        <div className="flex shrink-0 items-center justify-start w-12 gap-2 cursor-pointer" onClick={() => setCurrentPage('feed')}>
+          <span className="material-symbols-outlined text-primary text-3xl">all_inclusive</span>
+        </div>
+        <h1 className="text-text-light dark:text-text-dark text-xl font-bold leading-tight tracking-[-0.015em] flex-1">
+          Productive Bharat
+        </h1>
+        <div className="flex items-center justify-end gap-2">
+          {/* Theme Toggle */}
+          <button 
+            onClick={toggleTheme} 
+            className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-text-light dark:text-text-dark hover:bg-primary/10 transition-all"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            <span className="material-symbols-outlined">
+              {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+            </span>
+          </button>
+          
+          {/* Notifications */}
+          <button 
+            onClick={() => alert('Notifications clicked!')} 
+            className="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-text-light dark:text-text-dark hover:bg-primary/10 transition-all relative"
+          >
+            <span className="material-symbols-outlined">notifications</span>
+            <div className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-primary border-2 border-surface-light dark:border-surface-dark"></div>
+          </button>
+
+          {/* Settings */}
+          <button 
+            onClick={() => setCurrentPage('settings')} 
+            className={`flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 transition-all ${
+              currentPage === 'settings'
+                ? 'bg-primary/20 text-primary'
+                : 'bg-transparent text-text-light dark:text-text-dark hover:bg-primary/10'
+            }`}
+            title="Settings"
+          >
+            <span className="material-symbols-outlined">settings</span>
+          </button>
+        </div>
+      </div>
+      
+      {/* Tabs */}
+      <div className="px-4">
+        <div className="flex border-b border-border-light dark:border-border-dark gap-8">
+          <button 
+            onClick={() => setCurrentPage('feed')}
+            className={`flex flex-col items-center justify-center border-b-[3px] pb-3 pt-2 ${
+              currentPage === 'feed' 
+                ? 'border-b-primary' 
+                : 'border-b-transparent'
+            }`}
+          >
+            <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
+              currentPage === 'feed' 
+                ? 'text-primary' 
+                : 'text-text-muted-light dark:text-text-muted-dark'
+            }`}>
+              Feed
+            </p>
+          </button>
+          <button 
+            onClick={() => setCurrentPage('users')}
+            className={`flex flex-col items-center justify-center border-b-[3px] pb-3 pt-2 ${
+              currentPage === 'users' 
+                ? 'border-b-primary' 
+                : 'border-b-transparent'
+            }`}
+          >
+            <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
+              currentPage === 'users' 
+                ? 'text-primary' 
+                : 'text-text-muted-light dark:text-text-muted-dark'
+            }`}>
+              Network
+            </p>
+          </button>
+          <button 
+            onClick={() => setCurrentPage('profile')}
+            className={`flex flex-col items-center justify-center border-b-[3px] pb-3 pt-2 ${
+              currentPage === 'profile' 
+                ? 'border-b-primary' 
+                : 'border-b-transparent'
+            }`}
+          >
+            <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
+              currentPage === 'profile' 
+                ? 'text-primary' 
+                : 'text-text-muted-light dark:text-text-muted-dark'
+            }`}>
+              Profile
+            </p>
+          </button>
+          {user?.role === 'admin' && (
+            <button 
+              onClick={() => setCurrentPage('admin')}
+              className={`flex flex-col items-center justify-center border-b-[3px] pb-3 pt-2 gap-1 ${
+                currentPage === 'admin' 
+                  ? 'border-b-primary' 
+                  : 'border-b-transparent'
+              }`}
+            >
+              <span className={`material-symbols-outlined text-xl ${
+                currentPage === 'admin' 
+                  ? 'text-primary' 
+                  : 'text-text-muted-light dark:text-text-muted-dark'
+              }`}>
+                admin_panel_settings
+              </span>
+              <p className={`text-sm font-bold leading-normal tracking-[0.015em] ${
+                currentPage === 'admin' 
+                  ? 'text-primary' 
+                  : 'text-text-muted-light dark:text-text-muted-dark'
+              }`}>
+                Admin
+              </p>
             </button>
-            <div className="relative">
-              <button onClick={() => setCurrentPage('profile')}>
-                <Avatar src={user?.photoURL} alt={user?.name || 'User'} size="md" />
-              </button>
-            </div>
-            <button onClick={logout} className="hidden sm:block text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-saffron-dark dark:hover:text-saffron">
-              Logout
-            </button>
-          </div>
+          )}
         </div>
       </div>
     </header>
