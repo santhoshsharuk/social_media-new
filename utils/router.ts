@@ -9,12 +9,37 @@ export type Route =
   | '/settings'
   | '/';
 
+// Get the base path from the URL
+const getBasePath = (): string => {
+  const pathname = window.location.pathname;
+  if (pathname.includes('/social_media-new/')) {
+    return '/social_media-new';
+  }
+  return '';
+};
+
+// Build full path with base
+const buildPath = (route: Route): string => {
+  const basePath = getBasePath();
+  return basePath + route;
+};
+
+// Get route without base path
+const getRouteFromPath = (pathname: string): string => {
+  const basePath = getBasePath();
+  if (basePath && pathname.startsWith(basePath)) {
+    return pathname.slice(basePath.length) || '/';
+  }
+  return pathname;
+};
+
 export const router = {
   /**
    * Navigate to a route
    */
   push: (route: Route) => {
-    window.history.pushState({}, '', route);
+    const fullPath = buildPath(route);
+    window.history.pushState({}, '', fullPath);
     window.dispatchEvent(new PopStateEvent('popstate'));
   },
 
@@ -22,15 +47,16 @@ export const router = {
    * Replace current route
    */
   replace: (route: Route) => {
-    window.history.replaceState({}, '', route);
+    const fullPath = buildPath(route);
+    window.history.replaceState({}, '', fullPath);
     window.dispatchEvent(new PopStateEvent('popstate'));
   },
 
   /**
-   * Get current route
+   * Get current route (without base path)
    */
   getCurrentRoute: (): string => {
-    return window.location.pathname;
+    return getRouteFromPath(window.location.pathname);
   },
 
   /**

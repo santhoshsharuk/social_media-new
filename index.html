@@ -14,8 +14,16 @@
         var decoded = l.search.slice(1).split('&').map(function(s) { 
           return s.replace(/~and~/g, '&')
         }).join('?');
+        
+        // Get the base path (e.g., /social_media-new)
+        var pathSegments = l.pathname.split('/').filter(Boolean);
+        var basePath = '';
+        if (pathSegments.length > 0 && pathSegments[0] === 'social_media-new') {
+          basePath = '/social_media-new';
+        }
+        
         window.history.replaceState(null, null,
-          l.pathname.slice(0, -1) + decoded + l.hash
+          basePath + decoded + l.hash
         );
       }
     }(window.location))
