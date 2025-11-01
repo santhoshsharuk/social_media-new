@@ -15,8 +15,15 @@
           return s.replace(/~and~/g, '&')
         }).join('?');
         
+        // Keep the base path for subdirectory
+        var pathSegments = l.pathname.split('/').filter(Boolean);
+        var basePath = '';
+        if (pathSegments.length > 0 && pathSegments[0] === 'social_media-new') {
+          basePath = '/social_media-new';
+        }
+        
         window.history.replaceState(null, null,
-          decoded + l.hash
+          basePath + decoded + l.hash
         );
       }
     }(window.location))
@@ -201,8 +208,8 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/assets/index-FaLHmB9I.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/react-vendor-Bzgz95E1.js">
+  <script type="module" crossorigin src="/social_media-new/assets/index-CPT8L0R_.js"></script>
+  <link rel="modulepreload" crossorigin href="/social_media-new/assets/react-vendor-Bzgz95E1.js">
 </head>
 <body>
   <div id="root"></div>
