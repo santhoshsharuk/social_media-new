@@ -11,10 +11,7 @@ export type Route =
 
 // Get the base path from the URL
 const getBasePath = (): string => {
-  const pathname = window.location.pathname;
-  if (pathname.includes('/social_media-new/')) {
-    return '/social_media-new';
-  }
+  // For custom domain, use root path
   return '';
 };
 
