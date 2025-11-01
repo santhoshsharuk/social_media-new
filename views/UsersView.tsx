@@ -12,6 +12,7 @@ export const UsersView: React.FC = () => {
   const [admins, setAdmins] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'following'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchAdmins = async () => {
@@ -50,9 +51,21 @@ export const UsersView: React.FC = () => {
     }
   };
 
-  const filteredAdmins = filter === 'all' 
+  // Apply filter (all/following)
+  const filterAdmins = filter === 'all' 
     ? admins 
     : admins.filter(admin => currentUser?.following?.includes(admin.id));
+  
+  // Apply search query
+  const filteredAdmins = filterAdmins.filter(admin => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      admin.name.toLowerCase().includes(query) ||
+      admin.bio?.toLowerCase().includes(query) ||
+      admin.role?.toLowerCase().includes(query)
+    );
+  });
 
   const followingCount = admins.filter(admin => currentUser?.following?.includes(admin.id)).length;
 
@@ -120,6 +133,37 @@ export const UsersView: React.FC = () => {
           </div>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="bg-white dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-4">
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted-light dark:text-text-muted-dark">
+                search
+              </span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search people by name, bio, or role..."
+                className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-border-light dark:border-border-dark rounded-lg text-text-light dark:text-text-dark placeholder-text-muted-light dark:placeholder-text-muted-dark focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted-light dark:text-text-muted-dark hover:text-text-light dark:hover:text-text-dark transition-colors"
+                >
+                  <span className="material-symbols-outlined text-xl">close</span>
+                </button>
+              )}
+            </div>
+            {searchQuery && (
+              <div className="mt-2 text-sm text-text-muted-light dark:text-text-muted-dark">
+                Found {filteredAdmins.length} {filteredAdmins.length === 1 ? 'person' : 'people'}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Filter Tabs */}
         <div className="mb-6">
           <div className="bg-white dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark p-1 flex gap-1">
@@ -159,18 +203,29 @@ export const UsersView: React.FC = () => {
           <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-lg border border-border-light dark:border-border-dark p-8 sm:p-12 text-center">
             <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4 sm:mb-6">
               <span className="material-symbols-outlined text-4xl sm:text-5xl text-text-muted-light dark:text-text-muted-dark">
-                {filter === 'following' ? 'person_search' : 'group_off'}
+                {searchQuery ? 'search_off' : (filter === 'following' ? 'person_search' : 'group_off')}
               </span>
             </div>
             <h3 className="text-lg sm:text-xl font-bold text-text-light dark:text-text-dark mb-2">
-              {filter === 'following' ? 'Not following anyone yet' : 'No leaders found'}
+              {searchQuery 
+                ? 'No results found' 
+                : (filter === 'following' ? 'Not following anyone yet' : 'No leaders found')}
             </h3>
             <p className="text-sm sm:text-base text-text-muted-light dark:text-text-muted-dark mb-6">
-              {filter === 'following' 
-                ? 'Start following leaders to see them here!' 
-                : 'Check back later for inspiring leaders to connect with.'}
+              {searchQuery 
+                ? `No people found matching "${searchQuery}". Try a different search term.`
+                : (filter === 'following' 
+                    ? 'Start following leaders to see them here!' 
+                    : 'Check back later for inspiring leaders to connect with.')}
             </p>
-            {filter === 'following' && (
+            {searchQuery ? (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all"
+              >
+                Clear Search
+              </button>
+            ) : filter === 'following' && (
               <button
                 onClick={() => setFilter('all')}
                 className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all"
