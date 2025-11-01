@@ -11,8 +11,17 @@ export type Route =
 
 // Get the base path from the URL
 const getBasePath = (): string => {
-  // For custom domain, use root path
-  return '';
+  const pathname = window.location.pathname;
+  // Always use /social_media-new/ base path for subdirectory deployment
+  if (pathname.includes('/social_media-new/') || pathname === '/social_media-new') {
+    return '/social_media-new';
+  }
+  // For development
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return '';
+  }
+  // Default to subdirectory for production
+  return '/social_media-new';
 };
 
 // Build full path with base

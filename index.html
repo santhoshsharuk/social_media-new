@@ -15,8 +15,15 @@
           return s.replace(/~and~/g, '&')
         }).join('?');
         
+        // Keep the base path for subdirectory
+        var pathSegments = l.pathname.split('/').filter(Boolean);
+        var basePath = '';
+        if (pathSegments.length > 0 && pathSegments[0] === 'social_media-new') {
+          basePath = '/social_media-new';
+        }
+        
         window.history.replaceState(null, null,
-          decoded + l.hash
+          basePath + decoded + l.hash
         );
       }
     }(window.location))
