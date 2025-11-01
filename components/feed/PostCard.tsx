@@ -163,8 +163,17 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({ post, onUpdate, i
   };
 
   return (
-    <div className="bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg shadow-sm hover:shadow-md transition-shadow @container">
-      <div className="flex flex-col items-stretch justify-start p-4">
+    <div className="bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg shadow-sm hover:shadow-md transition-all @container group/card">
+      <div className="flex flex-col items-stretch justify-start p-4 md:cursor-pointer relative" onClick={(e) => {
+        // Only open modal on desktop if clicking on the card itself, not on interactive elements
+        if (window.innerWidth >= 768) {
+          const target = e.target as HTMLElement;
+          const isInteractiveElement = target.closest('button, input, a, video');
+          if (!isInteractiveElement) {
+            handleOpenModal();
+          }
+        }
+      }}>
         {/* Header */}
         <div className="flex items-center gap-3 mb-3">
           <img 
@@ -187,12 +196,16 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({ post, onUpdate, i
           carouselData ? (
             // Carousel View
             <div className="relative w-full mb-4 rounded-lg overflow-hidden group">
-              <div className="relative cursor-pointer" onClick={handleOpenModal}>
+              <div className="relative">
                 <img
                   src={getMediumImageUrl(carouselData.urls[currentSlide])}
                   alt={`Slide ${currentSlide + 1}`}
                   className={`w-full object-cover ${getAspectRatioClass(carouselData.aspectRatios[currentSlide])}`}
                   loading="lazy"
+                  onError={(e) => {
+                    // Fallback to original URL if optimized version fails
+                    e.currentTarget.src = carouselData.urls[currentSlide];
+                  }}
                 />
                 {/* Full view indicator */}
                 <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
@@ -205,14 +218,14 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({ post, onUpdate, i
                 {carouselData.urls.length > 1 && (
                   <>
                     <button
-                      onClick={handlePrevSlide}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => { e.stopPropagation(); handlePrevSlide(); }}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
                     >
                       <span className="material-symbols-outlined">chevron_left</span>
                     </button>
                     <button
-                      onClick={handleNextSlide}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => { e.stopPropagation(); handleNextSlide(); }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
                     >
                       <span className="material-symbols-outlined">chevron_right</span>
                     </button>
@@ -222,11 +235,11 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({ post, onUpdate, i
               
               {/* Dots Indicator */}
               {carouselData.urls.length > 1 && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
                   {carouselData.urls.map((_, index) => (
                     <button
                       key={index}
-                      onClick={() => setCurrentSlide(index)}
+                      onClick={(e) => { e.stopPropagation(); setCurrentSlide(index); }}
                       className={`w-2 h-2 rounded-full transition-all ${
                         index === currentSlide 
                           ? 'bg-white w-6' 
@@ -246,14 +259,20 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({ post, onUpdate, i
             </div>
           ) : (
             // Single Image View
-            <div 
-              className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg mb-4 cursor-pointer group relative overflow-hidden"
-              onClick={handleOpenModal} 
-              style={{ backgroundImage: `url("${optimizedImageUrl}")` }}
-            >
+            <div className="relative w-full mb-4 rounded-lg overflow-hidden group">
+              <img
+                src={optimizedImageUrl}
+                alt="Post media"
+                className="w-full aspect-video object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  // Fallback to original URL if optimized version fails
+                  e.currentTarget.src = post.mediaURL || '';
+                }}
+              />
               {/* Full view indicator */}
               <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
-                <span className="material-symbols-outlined text-white text-4xl opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="material-symbols-outlined text-white text-4xl opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg">
                   open_in_full
                 </span>
               </div>
@@ -261,8 +280,8 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({ post, onUpdate, i
           )
         )}
         {post.mediaURL && post.mediaType === 'video' && !carouselData && (
-          <div className="relative cursor-pointer group" onClick={handleOpenModal}>
-            <video className="w-full rounded-lg mb-4" controls src={post.mediaURL} />
+          <div className="relative group">
+            <video className="w-full rounded-lg mb-4" controls src={post.mediaURL} onClick={(e) => e.stopPropagation()} />
             <div className="absolute top-3 right-3 bg-black/60 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
               <span className="material-symbols-outlined text-sm">open_in_full</span>
               Full View
@@ -275,6 +294,12 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({ post, onUpdate, i
           <p className="text-text-light dark:text-text-dark text-base font-normal leading-relaxed whitespace-pre-wrap">
             {post.content}
           </p>
+        </div>
+
+        {/* Desktop Full View Indicator */}
+        <div className="hidden md:flex absolute top-4 right-4 items-center gap-1.5 bg-black/60 text-white px-3 py-1.5 rounded-lg text-xs font-semibold opacity-0 group-hover/card:opacity-100 transition-opacity pointer-events-none">
+          <span className="material-symbols-outlined text-sm">open_in_full</span>
+          <span>View Details</span>
         </div>
 
         {/* Actions - Compact Instagram Style */}

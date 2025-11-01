@@ -5,18 +5,32 @@ import { SignUp } from '../components/auth/SignUp';
 
 const AuthToggleContext = createContext<{
   isLogin: boolean;
+  isFlipping: boolean;
   toggleAuth: () => void;
-}>({ isLogin: true, toggleAuth: () => {} });
+}>({ isLogin: true, isFlipping: false, toggleAuth: () => {} });
 
 export const useAuthToggle = () => useContext(AuthToggleContext);
 
-export const AuthView: React.FC = () => {
-  const [isLogin, setIsLogin] = useState(true);
+interface AuthViewProps {
+  currentRoute?: string;
+}
 
-  const toggleAuth = () => setIsLogin(!isLogin);
+export const AuthView: React.FC<AuthViewProps> = ({ currentRoute = '/login' }) => {
+  const [isLogin, setIsLogin] = useState(currentRoute !== '/signup');
+  const [isFlipping, setIsFlipping] = useState(false);
+
+  const toggleAuth = () => {
+    setIsFlipping(true);
+    setTimeout(() => {
+      setIsLogin(!isLogin);
+      setTimeout(() => {
+        setIsFlipping(false);
+      }, 100);
+    }, 350);
+  };
 
   return (
-    <AuthToggleContext.Provider value={{ isLogin, toggleAuth }}>
+    <AuthToggleContext.Provider value={{ isLogin, isFlipping, toggleAuth }}>
       {isLogin ? <Login /> : <SignUp />}
     </AuthToggleContext.Provider>
   );

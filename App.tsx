@@ -8,11 +8,51 @@ import { MainView } from './views/MainView';
 import { auth, api, formatUser } from './services/firebase';
 // FIX: Removed incorrect import for onAuthStateChanged as it is not available in the Firebase v8 API.
 import { Spinner } from './components/ui/Spinner';
+import { router } from './utils/router';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState<Page>('feed');
+  const [currentRoute, setCurrentRoute] = useState(router.getCurrentRoute());
+
+  // Handle routing
+  useEffect(() => {
+    const handleRouteChange = () => {
+      const route = router.getCurrentRoute();
+      setCurrentRoute(route);
+      
+      // Map routes to pages
+      switch (route) {
+        case '/feed':
+          setCurrentPage('feed');
+          break;
+        case '/profile':
+          setCurrentPage('profile');
+          break;
+        case '/users':
+          setCurrentPage('users');
+          break;
+        case '/admin':
+          setCurrentPage('admin');
+          break;
+        case '/settings':
+          setCurrentPage('settings');
+          break;
+        default:
+          if (user) {
+            setCurrentPage('feed');
+          }
+      }
+    };
+
+    // Initial route check
+    handleRouteChange();
+
+    // Listen for route changes
+    window.addEventListener('popstate', handleRouteChange);
+    return () => window.removeEventListener('popstate', handleRouteChange);
+  }, [user]);
 
   useEffect(() => {
     // FIX: Switched to Firebase v8 namespaced API for onAuthStateChanged.
@@ -21,12 +61,22 @@ function App() {
         try {
           const appUser = await formatUser(firebaseUser);
           setUser(appUser);
+          // Redirect to feed if on auth pages
+          const route = router.getCurrentRoute();
+          if (route === '/' || route === '/login' || route === '/signup') {
+            router.replace('/feed');
+          }
         } catch (error) {
           console.error("Error fetching user profile:", error);
           setUser(null); // Fallback on error
         }
       } else {
         setUser(null);
+        // Redirect to login if not authenticated
+        const route = router.getCurrentRoute();
+        if (route !== '/login' && route !== '/signup' && route !== '/') {
+          router.replace('/login');
+        }
       }
       setLoading(false);
     });
@@ -36,18 +86,21 @@ function App() {
   const login = async (email: string, password?: string): Promise<User> => {
     const loggedInUser = await api.login(email, password);
     setUser(loggedInUser);
+    router.push('/feed');
     return loggedInUser;
   };
 
   const loginWithGoogle = async (): Promise<User> => {
     const loggedInUser = await api.loginWithGoogle();
     setUser(loggedInUser);
+    router.push('/feed');
     return loggedInUser;
   };
 
   const signup = async (name: string, email: string, password?: string): Promise<User> => {
     const newUser = await api.signup(name, email, password);
     setUser(newUser);
+    router.push('/feed');
     return newUser;
   };
 
@@ -55,6 +108,7 @@ function App() {
     await api.logout();
     setUser(null);
     setCurrentPage('feed');
+    router.push('/login');
   };
   
   const updateUserState = (updates: Partial<User>) => {
@@ -99,14 +153,28 @@ function App() {
     );
   }
 
+  const handlePageChange = (page: Page) => {
+    setCurrentPage(page);
+    // Map pages to routes
+    const routeMap: Record<Page, string> = {
+      feed: '/feed',
+      profile: '/profile',
+      users: '/users',
+      admin: '/admin',
+      settings: '/settings',
+      chat: '/chat',
+    };
+    router.push(routeMap[page] as any);
+  };
+
   return (
     <ThemeProvider>
       <AuthContext.Provider value={{ user, login, loginWithGoogle, logout, signup, follow, unfollow, updateProfile }}>
         <div className="App">
           {user ? (
-            <MainView currentPage={currentPage} setCurrentPage={setCurrentPage} />
+            <MainView currentPage={currentPage} setCurrentPage={handlePageChange} />
           ) : (
-            <AuthView />
+            <AuthView currentRoute={currentRoute} />
           )}
         </div>
       </AuthContext.Provider>

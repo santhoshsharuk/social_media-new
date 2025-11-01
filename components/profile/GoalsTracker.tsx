@@ -1,57 +1,12 @@
 
 import React, { useState } from 'react';
-import { GoogleGenAI } from '@google/genai';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../services/firebase';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Spinner } from '../ui/Spinner';
 
 interface GoalsTrackerProps {
   initialGoals: string[];
-}
-
-const GoalSuggestionButton: React.FC<{ onSuggest: (goal: string) => void }> = ({ onSuggest }) => {
-  const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
-  
-  const getSuggestion = async () => {
-    if (!process.env.API_KEY) {
-      alert("Gemini API key is not configured. Cannot get suggestions.");
-      return;
-    }
-    setLoading(true);
-    try {
-      // FIX: Use the correct constructor with a named parameter.
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const prompt = `Based on this user bio: "${user?.bio}", suggest one concise, actionable, and inspiring personal or professional goal. The goal should be a short phrase without quotes. For example: Learn a new programming language or Read 12 books this year.`;
-      
-      // FIX: Call generateContent with model and contents.
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-      });
-
-      // FIX: Access the generated text directly from the .text property.
-      const suggestion = response.text.trim().replace(/^\"|\"$/g, ""); // Clean up response
-      if (suggestion) {
-        onSuggest(suggestion);
-      } else {
-        alert("Could not generate a suggestion at this time.");
-      }
-    } catch (error) {
-      console.error("Error getting goal suggestion:", error);
-      alert("An error occurred while getting a suggestion.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Button size="sm" variant="secondary" onClick={getSuggestion} disabled={loading}>
-      {loading ? <Spinner /> : '✨ Suggest a Goal'}
-    </Button>
-  )
 }
 
 export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ initialGoals }) => {
@@ -82,13 +37,6 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ initialGoals }) => {
       setNewGoal('');
     }
   };
-  
-  const handleAddSuggestedGoal = (goal: string) => {
-    if (goal.trim() && !goals.includes(goal)) {
-        const updatedGoals = [...goals, goal.trim()];
-        updateGoalsInBackend(updatedGoals);
-    }
-  }
 
   const handleRemoveGoal = (indexToRemove: number) => {
     const updatedGoals = goals.filter((_, index) => index !== indexToRemove);
@@ -99,7 +47,6 @@ export const GoalsTracker: React.FC<GoalsTrackerProps> = ({ initialGoals }) => {
     <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">My Goals</h2>
-          <GoalSuggestionButton onSuggest={handleAddSuggestedGoal} />
       </div>
       <form onSubmit={handleAddGoal} className="flex gap-2 mb-4">
         <Input 
